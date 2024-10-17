@@ -38,9 +38,14 @@ Here's the default mapping object for reference:
 		new_stack = 'n',
 		delete_stack = 'D',
 		close = 'q',
+		help = 'h', -- Not rebindable
 	}
 }
 ```
+
+Check the mentioned help screen to see current keybinds and their use:
+
+![Help](assets/help.png)
 
 ## Compatibility/Support
 
