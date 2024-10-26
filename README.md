@@ -11,6 +11,7 @@ Programming often involves navigating between similar points of interest. Additi
 - Capture and manage bookmarks as stacks of line number locations
 - Opt-in persistence of bookmarks on a per-directory basis
 - Togglable UI, with contextual and rebindable controls
+- Cycle bookmarks via keybind
 
 ## Requirements
 Neovim (**stable** only) >= 0.10.0

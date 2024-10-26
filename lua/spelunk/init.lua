@@ -114,14 +114,21 @@ function M.move_bookmark(direction)
 	M.persist()
 end
 
-function M.goto_selected_bookmark()
+---@param close boolean
+local function goto_bookmark(close)
 	local bookmarks = bookmark_stacks[current_stack_index].bookmarks
 	if cursor_index > 0 and cursor_index <= #bookmarks then
-		M.close_windows()
+		if close then
+			M.close_windows()
+		end
 		vim.schedule(function()
 			vim.cmd('edit +' .. bookmarks[cursor_index].line .. ' ' .. bookmarks[cursor_index].file)
 		end)
 	end
+end
+
+function M.goto_selected_bookmark()
+	goto_bookmark(true)
 end
 
 function M.delete_selected_bookmark()
@@ -140,7 +147,7 @@ end
 ---@param direction 1 | -1
 function M.select_and_goto_bookmark(direction)
 	M.move_cursor(direction)
-	M.goto_selected_bookmark()
+	goto_bookmark(false)
 end
 
 function M.delete_current_stack()
@@ -195,6 +202,8 @@ function M.setup(c)
 	cfg.apply_window_defaults(window_config)
 	ui.setup(window_config)
 
+	-- Load saved bookmarks, if enabled and available
+	-- Otherwise, set defaults
 	enable_persist = conf.enable_persist or cfg.get_default('enable_persist')
 	if enable_persist then
 		local saved = persist.load()
