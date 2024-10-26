@@ -1,22 +1,25 @@
 local ui = require('spelunk.ui')
+local persist = require('spelunk.persistence')
 
 local M = {}
 
----@class Bookmark
----@field file string
----@field line integer
-
----@type table<string, Bookmark[]>
-local bookmark_stacks = {
+---@type BookmarkStack
+local default_stacks = {
 	{ name = "Default", bookmarks = {} }
 }
+---@type BookmarkStack
+local bookmark_stacks
 ---@type integer
 local current_stack_index = 1
 ---@type integer
 local cursor_index = 1
 
-local window_config = nil
+local window_config
 
+---@type boolean
+local enable_persist
+
+---@param tbl table
 local function tbllen(tbl)
 	local count = 0
 	for _ in pairs(tbl) do count = count + 1 end
@@ -74,8 +77,10 @@ function M.add_bookmark()
 	print("[spelunk] Bookmark added to stack '" ..
 		bookmark_stacks[current_stack_index].name .. "': " .. current_file .. ":" .. current_line)
 	update_window()
+	M.persist()
 end
 
+---@param direction 1 | -1
 function M.move_cursor(direction)
 	local bookmarks = bookmark_stacks[current_stack_index].bookmarks
 	cursor_index = cursor_index + direction
@@ -87,7 +92,7 @@ function M.move_cursor(direction)
 	update_window()
 end
 
----@param direction integer
+---@param direction 1 | -1
 function M.move_bookmark(direction)
 	if direction ~= 1 and direction ~= -1 then
 		print('[spelunk] move_bookmark passed invalid direction')
@@ -106,14 +111,16 @@ function M.move_bookmark(direction)
 	bookmark_stacks[current_stack_index].bookmarks[cursor_index] = tmp_new
 	bookmark_stacks[current_stack_index].bookmarks[new_idx] = curr_mark
 	M.move_cursor(direction)
+	M.persist()
 end
 
 function M.goto_selected_bookmark()
 	local bookmarks = bookmark_stacks[current_stack_index].bookmarks
-	if bookmarks[cursor_index] then
-		local bookmark = bookmarks[cursor_index]
-		ui.close_windows()
-		vim.cmd('edit +' .. bookmark.line .. ' ' .. bookmark.file)
+	if cursor_index > 0 and cursor_index <= #bookmarks then
+		M.close_windows()
+		vim.schedule(function()
+			vim.cmd('edit +' .. bookmarks[cursor_index].line .. ' ' .. bookmarks[cursor_index].file)
+		end)
 	end
 end
 
@@ -123,10 +130,17 @@ function M.delete_selected_bookmark()
 		return
 	end
 	table.remove(bookmarks, cursor_index)
-	if cursor_index > #bookmarks then
+	if cursor_index > #bookmarks and #bookmarks ~= 0 then
 		cursor_index = #bookmarks
 	end
 	update_window()
+	M.persist()
+end
+
+---@param direction 1 | -1
+function M.select_and_goto_bookmark(direction)
+	M.move_cursor(direction)
+	M.goto_selected_bookmark()
 end
 
 function M.delete_current_stack()
@@ -140,6 +154,7 @@ function M.delete_current_stack()
 	table.remove(bookmark_stacks, current_stack_index)
 	current_stack_index = 1
 	update_window()
+	M.persist()
 end
 
 function M.next_stack()
@@ -162,20 +177,43 @@ function M.new_stack()
 		cursor_index = 1
 		update_window()
 	end
+	M.persist()
 end
 
-function M.setup(config)
-	local cfg_helpers = require('spelunk.config')
-	local base_config = (config or {}).base_mappings or {}
-	cfg_helpers.apply_base_defaults(base_config)
-	window_config = (config or {}).window_mappings or {}
-	cfg_helpers.apply_window_defaults(window_config)
+function M.persist()
+	if enable_persist then
+		persist.save(bookmark_stacks)
+	end
+end
+
+function M.setup(c)
+	local conf = c or {}
+	local cfg = require('spelunk.config')
+	local base_config = conf.base_mappings or {}
+	cfg.apply_base_defaults(base_config)
+	window_config = conf.window_mappings or {}
+	cfg.apply_window_defaults(window_config)
 	ui.setup(window_config)
+
+	enable_persist = conf.enable_persist or cfg.get_default('enable_persist')
+	if enable_persist then
+		local saved = persist.load()
+		if saved then
+			bookmark_stacks = saved
+		end
+	end
+	if not bookmark_stacks then
+		bookmark_stacks = default_stacks
+	end
 
 	local set = vim.keymap.set
 	set('n', base_config.toggle, ':lua require("spelunk").toggle_window()<CR>',
 		{ noremap = true, silent = true })
 	set('n', base_config.add, ':lua require("spelunk").add_bookmark()<CR>',
+		{ noremap = true, silent = true })
+	set('n', base_config.next_bookmark, ':lua require("spelunk").select_and_goto_bookmark(1)<CR>',
+		{ noremap = true, silent = true })
+	set('n', base_config.prev_bookmark, ':lua require("spelunk").select_and_goto_bookmark(-1)<CR>',
 		{ noremap = true, silent = true })
 end
 
