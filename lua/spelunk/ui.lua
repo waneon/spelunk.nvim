@@ -9,6 +9,7 @@ local preview_window_id = -1
 ---@type integer
 local help_window_id = -1
 
+local base_config
 local window_config
 
 local focus_cb
@@ -64,7 +65,7 @@ local function persist_focus(win_id, cleanup)
 		vim.api.nvim_create_autocmd('WinEnter', {
 			group = group_name,
 			callback = cb,
-			desc = 'spelunk.nvim hold focus'
+			desc = '[spelunk.nvim] hold focus'
 		})
 	end
 
@@ -77,7 +78,7 @@ local function persist_focus(win_id, cleanup)
 	vim.api.nvim_create_autocmd("WinClosed", {
 		pattern = tostring(win_id),
 		callback = cleanup,
-		desc = 'spelunk.nvim cleanup window exit',
+		desc = '[spelunk.nvim] cleanup window exit',
 	})
 
 	return focus, unfocus
@@ -108,7 +109,8 @@ local function read_lines(filename, start_line, end_line)
 	return result
 end
 
-function M.setup(window_cfg)
+function M.setup(base_cfg, window_cfg)
+	base_config = base_cfg
 	window_config = window_cfg
 end
 
@@ -136,7 +138,19 @@ function M.show_help()
 		col = help_slot.col,
 		line = help_slot.line
 	})
+
 	local content = {
+		'Normal Mappings',
+		'---------------',
+		'Toggle UI         ' .. base_config.toggle,
+		'Add bookmark      ' .. base_config.add,
+		'Next bookmark     ' .. base_config.next_bookmark,
+		'Prev bookmark     ' .. base_config.prev_bookmark,
+		'Search bookmarks  ' .. base_config.search_bookmarks,
+		'Search stack      ' .. base_config.search_current_bookmarks,
+		'',
+		'Window Mappings',
+		'---------------',
 		'Cursor down       ' .. window_config.cursor_down,
 		'Cursor up         ' .. window_config.cursor_up,
 		'Bookmark down     ' .. window_config.bookmark_down,
@@ -186,34 +200,34 @@ function M.create_windows()
 	preview_window_id = prev_id
 
 	-- Set up keymaps for navigation within the window
-	local function setkey(key, func)
+	local function set(key, func)
 		vim.api.nvim_buf_set_keymap(bufnr, 'n', key, func, { noremap = true, silent = true })
 	end
-	setkey(window_config.cursor_down, ':lua require("spelunk").move_cursor(1)<CR>')
-	setkey(window_config.cursor_up, ':lua require("spelunk").move_cursor(-1)<CR>')
-	setkey(window_config.bookmark_down, ':lua require("spelunk").move_bookmark(1)<CR>')
-	setkey(window_config.bookmark_up, ':lua require("spelunk").move_bookmark(-1)<CR>')
-	setkey(window_config.goto_bookmark, ':lua require("spelunk").goto_selected_bookmark()<CR>')
-	setkey(window_config.delete_bookmark, ':lua require("spelunk").delete_selected_bookmark()<CR>')
-	setkey(window_config.next_stack, ':lua require("spelunk").next_stack()<CR>')
-	setkey(window_config.previous_stack, ':lua require("spelunk").prev_stack()<CR>')
-	setkey(window_config.new_stack, ':lua require("spelunk").new_stack()<CR>')
-	setkey(window_config.delete_stack, ':lua require("spelunk").delete_current_stack()<CR>')
-	setkey(window_config.close, ':lua require("spelunk").close_windows()<CR>')
-	setkey('h', ':lua require("spelunk").show_help()<CR>')
+	set(window_config.cursor_down, ':lua require("spelunk").move_cursor(1)<CR>')
+	set(window_config.cursor_up, ':lua require("spelunk").move_cursor(-1)<CR>')
+	set(window_config.bookmark_down, ':lua require("spelunk").move_bookmark(1)<CR>')
+	set(window_config.bookmark_up, ':lua require("spelunk").move_bookmark(-1)<CR>')
+	set(window_config.goto_bookmark, ':lua require("spelunk").goto_selected_bookmark()<CR>')
+	set(window_config.delete_bookmark, ':lua require("spelunk").delete_selected_bookmark()<CR>')
+	set(window_config.next_stack, ':lua require("spelunk").next_stack()<CR>')
+	set(window_config.previous_stack, ':lua require("spelunk").prev_stack()<CR>')
+	set(window_config.new_stack, ':lua require("spelunk").new_stack()<CR>')
+	set(window_config.delete_stack, ':lua require("spelunk").delete_current_stack()<CR>')
+	set(window_config.close, ':lua require("spelunk").close_windows()<CR>')
+	set('h', ':lua require("spelunk").show_help()<CR>')
 
 	focus_cb, unfocus_cb = persist_focus(win_id, function()
 		if window_ready(window_id) then
 			vim.api.nvim_win_close(window_id, true)
-			window_id = -1
 		end
+		window_id = -1
 		-- Defer preview window cleanup, as running it concurrently to main window
 		-- causes it to not fire
 		vim.schedule(function()
 			if window_ready(preview_window_id) then
 				vim.api.nvim_win_close(preview_window_id, true)
-				preview_window_id = -1
 			end
+			preview_window_id = -1
 		end)
 	end)
 
@@ -233,7 +247,11 @@ local function update_preview(opts)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 
-	-- Highlight the bookmarked line
+	local ft = vim.filetype.match({ filename = opts.bookmark.file })
+	if ft then
+		vim.bo[bufnr].filetype = ft
+	end
+
 	vim.api.nvim_buf_clear_namespace(bufnr, -1, 0, -1)
 	vim.api.nvim_buf_add_highlight(bufnr, -1, 'Search', math.floor(standard_height / 2), 0, -1)
 end
@@ -276,7 +294,6 @@ end
 function M.close_windows()
 	if window_ready(window_id) then
 		vim.api.nvim_win_close(window_id, true)
-		window_id = -1
 	end
 end
 

@@ -12,6 +12,7 @@ Programming often involves navigating between similar points of interest. Additi
 - Opt-in persistence of bookmarks on a per-directory basis
 - Togglable UI, with contextual and rebindable controls
 - Cycle bookmarks via keybind
+- Telescope integration! Fuzzy find over all bookmarks, or those in the current stack
 
 ## Requirements
 Neovim (**stable** only) >= 0.10.0
@@ -22,7 +23,10 @@ Via [lazy](https://github.com/folke/lazy.nvim):
 require("lazy").setup({
 	{
 		'EvWilson/spelunk.nvim',
-		dependencies = { 'nvim-lua/plenary.nvim' },
+		dependencies = {
+			'nvim-lua/plenary.nvim',        -- For window drawing utilities
+			'nvim-telescope/telescope.nvim' -- Optional: for fuzzy search capabilities
+		},
 		config = function()
 			require('spelunk').setup({
 				enable_persist = true
@@ -41,6 +45,8 @@ Here's the default mapping object for reference:
 		add = '<leader>ba',
 		next_bookmark = '<leader>bn',
 		prev_bookmark = '<leader>bp',
+		search_bookmarks = '<leader>bf',
+		search_current_bookmarks = '<leader>bc'
 	},
 	window_mappings = {
 		cursor_down = 'j',
