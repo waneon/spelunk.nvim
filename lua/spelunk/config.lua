@@ -20,9 +20,11 @@ local default_config = {
 		previous_stack = '<S-Tab>',
 		new_stack = 'n',
 		delete_stack = 'D',
+		edit_stack = 'E',
 		close = 'q',
 	},
 	enable_persist = false,
+	statusline_prefix = '🔖',
 }
 
 ---@param target table
