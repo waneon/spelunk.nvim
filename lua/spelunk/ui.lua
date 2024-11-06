@@ -185,6 +185,7 @@ function M.show_help()
 		'Go to bookmark          ' .. window_config.goto_bookmark,
 		'Go to bookmark, split   ' .. window_config.goto_bookmark_hsplit,
 		'Go to bookmark, vsplit  ' .. window_config.goto_bookmark_vsplit,
+		'Go to bookmark at index ' .. '# of index',
 		'Delete bookmark         ' .. window_config.delete_bookmark,
 		'Next stack              ' .. window_config.next_stack,
 		'Previous stack          ' .. window_config.previous_stack,
@@ -214,7 +215,8 @@ function M.close_help()
 	vim.api.nvim_win_close(help_window_id, true)
 end
 
-function M.create_windows()
+---@param max_stack_size integer
+function M.create_windows(max_stack_size)
 	local win_dims = bookmark_dimensions()
 	local bufnr, win_id = create_window({
 		title = 'Bookmarks',
@@ -261,6 +263,11 @@ function M.create_windows()
 	set(window_config.close, ':lua require("spelunk").close_windows()<CR>', '[spelunk.nvim] Close UI')
 	set('h', ':lua require("spelunk").show_help()<CR>', '[spelunk.nvim] Show help menu')
 
+	for i = 1, max_stack_size do
+		set(tostring(i), string.format(':lua require("spelunk").goto_bookmark_at_index(%d)<CR>', i),
+			string.format('[spelunk.nvim] Go to bookmark at stack position %d', i))
+	end
+
 	focus_cb, unfocus_cb = persist_focus(win_id, function()
 		if window_ready(window_id) then
 			vim.api.nvim_win_close(window_id, true)
@@ -289,8 +296,7 @@ local function update_preview(opts)
 	local bufnr = vim.api.nvim_win_get_buf(preview_window_id)
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	local startline = math.max(1, math.ceil(bookmark.line - (prev_dims.base.standard_height / 2)))
-	local endline = math.ceil(bookmark.line + (prev_dims.base.standard_height / 2))
-	local lines = read_lines(bookmark.file, startline, endline)
+	local lines = read_lines(bookmark.file, startline, startline + prev_dims.base.standard_height)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 
@@ -300,7 +306,7 @@ local function update_preview(opts)
 	end
 
 	vim.api.nvim_buf_clear_namespace(bufnr, -1, 0, -1)
-	vim.api.nvim_buf_add_highlight(bufnr, -1, 'Search', math.floor(prev_dims.base.standard_height / 2), 0, -1)
+	vim.api.nvim_buf_add_highlight(bufnr, -1, 'Search', bookmark.line - startline, 0, -1)
 end
 
 ---@param opts UpdateWinOpts
@@ -311,7 +317,12 @@ function M.update_window(opts)
 
 	local bufnr = vim.api.nvim_win_get_buf(window_id)
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
-	local content = { 'Current stack: ' .. opts.title, unpack(opts.lines) }
+	local content_lines = {}
+	for idx, line in ipairs(opts.lines) do
+		local prefix = idx == opts.cursor_index and '>' or ' '
+		table.insert(content_lines, string.format('%s%2d %s', prefix, idx, line))
+	end
+	local content = { 'Current stack: ' .. opts.title, unpack(content_lines) }
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 
@@ -332,7 +343,7 @@ function M.toggle_window(opts)
 	if window_ready(window_id) then
 		M.close_windows()
 	else
-		local _ = M.create_windows()
+		local _ = M.create_windows(opts.max_stack_size)
 		M.update_window(opts)
 		vim.api.nvim_set_current_win(window_id)
 	end
