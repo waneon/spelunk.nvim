@@ -193,7 +193,7 @@ function M.show_help()
 		'Delete stack            ' .. window_config.delete_stack,
 		'Edit stack              ' .. window_config.edit_stack,
 		'Close                   ' .. window_config.close,
-		'Help                    ' .. 'h',
+		'Help                    ' .. window_config.help,
 	}
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
@@ -261,7 +261,7 @@ function M.create_windows(max_stack_size)
 	set(window_config.edit_stack, ':lua require("spelunk").edit_current_stack()<CR>',
 		'[spelunk.nvim] Edit the name of the current stack')
 	set(window_config.close, ':lua require("spelunk").close_windows()<CR>', '[spelunk.nvim] Close UI')
-	set('h', ':lua require("spelunk").show_help()<CR>', '[spelunk.nvim] Show help menu')
+	set(window_config.help, ':lua require("spelunk").show_help()<CR>', '[spelunk.nvim] Show help menu')
 
 	for i = 1, max_stack_size do
 		set(tostring(i), string.format(':lua require("spelunk").goto_bookmark_at_index(%d)<CR>', i),
