@@ -12,7 +12,7 @@ end
 
 If you'd like to change this, for example to display just the basename of the filepath, add this after calling the `setup` function in your config:
 ```lua
-require('spelunk').file_formatter = function(abspath)
+require('spelunk').filename_formatter = function(abspath)
 	return vim.fn.fnamemodify(abspath, ':t')
 end
 ```
