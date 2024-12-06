@@ -1,13 +1,25 @@
----@class Bookmark
+---@class PhysicalBookmark
 ---@field file string
 ---@field line integer
+---@field col integer
 
 ---@class FullBookmark
 ---@field stack string
 ---@field file string
 ---@field line integer
+---@field col integer
 
----@alias BookmarkStack table<string, Bookmark[]>
+---@class PhysicalStack
+---@field name string
+---@field bookmarks PhysicalBookmark[]
+---
+---@class VirtualBookmark
+---@field bufnr integer
+---@field mark_id integer
+
+---@class VirtualStack
+---@field name string
+---@field bookmarks VirtualBookmark[]
 
 ---@class CreateWinOpts
 ---@field title string
@@ -20,7 +32,7 @@
 ---@field cursor_index integer
 ---@field title string
 ---@field lines string[]
----@field bookmark Bookmark
+---@field bookmark VirtualBookmark
 ---@field max_stack_size integer
 
 ---@class BaseDimensions
