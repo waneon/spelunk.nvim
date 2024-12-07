@@ -15,7 +15,7 @@ Programming often involves navigating between similar points of interest. Additi
 - Togglable UI, with contextual and rebindable controls
 - Cycle bookmarks via keybind
 - Jump directly to bookmark by index
-- Telescope integration - fuzzy find over all bookmarks, or those in the current stack
+- Telescope integration - fuzzy find over bookmarks and stacks
 - Lualine integration - show the number of bookmarks in the current buffer
 - Status line index display
 
@@ -57,7 +57,9 @@ Here's the default mapping object for reference:
 		-- Fuzzy-find all bookmarks
 		search_bookmarks = '<leader>bf',
 		-- Fuzzy-find bookmarks in current stack
-		search_current_bookmarks = '<leader>bc'
+		search_current_bookmarks = '<leader>bc',
+		-- Fuzzy find all stacks
+		search_stacks = '<leader>bs',
 	},
 	window_mappings = {
 		-- Move the UI cursor down
@@ -231,6 +233,12 @@ If there is functionality you'd like to see added or exposed, please feel free t
 	- Description: return all marks in the current stack
 	- Returns:
 		- `FullBookmark[]`
+
+- `qf_all_marks()`
+	- Description: open all mark locations in the quickfix list
+
+- `qf_current_marks()`
+	- Description: open current stack's mark locations in the quickfix list
 
 ### API Questions?
 Some examples are available in th [`faqs`](faqs/) directory. If there's something you'd like to know how to do, please open an issue and we can see about implementing it!
