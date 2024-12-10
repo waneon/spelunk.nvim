@@ -17,7 +17,7 @@ Programming often involves navigating between similar points of interest. Additi
 - Jump directly to bookmark by index
 - Telescope integration - fuzzy find over bookmarks and stacks
 - Lualine integration - show the number of bookmarks in the current buffer
-- Status line index display
+- Sign column index display
 
 ## Requirements
 Neovim (**stable** only) >= 0.10.0
