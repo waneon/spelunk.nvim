@@ -1,13 +1,17 @@
+---@alias MarkMeta table<string, any>
+
 ---@class PhysicalBookmark
 ---@field file string
 ---@field line integer
 ---@field col integer
+---@field meta MarkMeta
 
 ---@class FullBookmark
 ---@field stack string
 ---@field file string
 ---@field line integer
 ---@field col integer
+---@field meta MarkMeta
 
 ---@class PhysicalStack
 ---@field name string
@@ -19,6 +23,7 @@
 ---@field col integer
 ---@field bufnr integer
 ---@field mark_id integer
+---@field meta MarkMeta
 
 ---@class VirtualBookmarkWithStack
 ---@field stack string
@@ -27,6 +32,7 @@
 ---@field col integer
 ---@field bufnr integer
 ---@field mark_id integer
+---@field meta MarkMeta
 
 ---@class VirtualStack
 ---@field name string
@@ -56,6 +62,6 @@
 ---@field col integer
 
 ---@class LayoutProvider
----@field bookmark_dimensions fun(): WindowCoords
----@field preview_dimensions fun(): WindowCoords
----@field help_dimensions fun(): WindowCoords
+---@field bookmark_dimensions nil | fun(): WindowCoords
+---@field preview_dimensions nil | fun(): WindowCoords
+---@field help_dimensions nil | fun(): WindowCoords

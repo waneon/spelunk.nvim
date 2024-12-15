@@ -13,11 +13,16 @@ Programming often involves navigating between similar points of interest. Additi
 - Capture and manage bookmarks as stacks of line number locations
 - Opt-in persistence of bookmarks on a per-directory basis
 - Togglable UI, with contextual and rebindable controls
+	- Can also customize layout and panel rendering
 - Cycle bookmarks via keybind
 - Jump directly to bookmark by index
 - Telescope integration - fuzzy find over bookmarks and stacks
 - Lualine integration - show the number of bookmarks in the current buffer
 - Sign column index display
+- Mark aliases
+- Treesitter integration - show grammar context
+
+See the `faqs/` directory for more custom setup guides.
 
 ## Requirements
 Neovim (**stable** only) >= 0.10.0
@@ -29,8 +34,9 @@ require('lazy').setup({
 	{
 		'EvWilson/spelunk.nvim',
 		dependencies = {
-			'nvim-lua/plenary.nvim',         -- For window drawing utilities
-			'nvim-telescope/telescope.nvim', -- Optional: for fuzzy search capabilities
+			'nvim-lua/plenary.nvim',           -- For window drawing utilities
+			'nvim-telescope/telescope.nvim',   -- Optional: for fuzzy search capabilities
+			'nvim-treesitter/nvim-treesitter', -- Optional: for showing grammar context
 		},
 		config = function()
 			require('spelunk').setup({
@@ -200,7 +206,7 @@ If there is functionality you'd like to see added or exposed, please feel free t
 - `goto_bookmark_at_index(idx)`
 	- Description: navigate to the bookmark at the given index in the current stack
 	- Parameters:
-		- `idx` - `integer`: index of the bookmark to navigate to
+		- `idx: integer`: index of the bookmark to navigate to
 
 - `delete_selected_bookmark()`
 	- Description: delete the bookmark currently under the cursor in the UI
@@ -239,7 +245,7 @@ If there is functionality you'd like to see added or exposed, please feel free t
 - `all_full_marks()`
 	- Description: return all marks
 	- Returns:
-		- `FullBookmark[]` (see [types.lua](lua/spelunk/types.lua))
+		- `FullBookmark[]`: see [types.lua](lua/spelunk/types.lua)
 
 - `current_full_marks()`
 	- Description: return all marks in the current stack
@@ -252,12 +258,26 @@ If there is functionality you'd like to see added or exposed, please feel free t
 - `qf_current_marks()`
 	- Description: open current stack's mark locations in the quickfix list
 
+- `add_mark_meta`
+	- Description: add a value to a string key in the current mark's metadata table, can be used to create aliases or otherwise (see `faqs/`)
+	- Parameters:
+		- `field: string`: field in the metadata object to assign to
+		- `val: any`: value to assign to the field
+
+- `get_mark_meta`
+	- Description: retrieve a value from a mark's metadata table
+	- Parameters:
+		- `mark: VirtualBookmark | PhysicalBookmark`: the mark to pull the value from
+	- Returns:
+		- `any | nil`
+
 - `require('spelunk.util').get_treesitter_context(mark)`
 	- Description: specially-scoped function to get the context of the given mark, in terms of chained Treesitter contexts
 	- Disclaimer: this function is best-effort and incubatory, please open an issue if it's misbehaving and see the guide in `faqs/` for usage
 	- Parameters:
 		- `mark: VirtualBookmark`
-	- Returns: string
+	- Returns:
+		- `string`
 
 ### API Questions?
 Some examples are available in th [`faqs`](faqs/) directory. If there's something you'd like to know how to do, please open an issue and we can see about implementing it!
@@ -266,3 +286,4 @@ Currently there are guides on:
 - Providing a custom formatter for display filenames
 - Overriding the display function altogether to show Treesitter context instead of mark location
 - Not rendering the preview UI pane, which applies to all UI panes
+- Setting custom aliases for marks

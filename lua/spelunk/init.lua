@@ -59,7 +59,7 @@ end
 local max_stack_size = function()
 	local max = 0
 	for _, stack in ipairs(bookmark_stacks) do
-		local size = util.tbllen(stack.bookmarks)
+		local size = #stack.bookmarks
 		if size > max then
 			max = size
 		end
@@ -143,7 +143,7 @@ end
 
 ---@param direction 1 | -1
 function M.move_cursor(direction)
-	local bookmarks = bookmark_stacks[current_stack_index].bookmarks
+	local bookmarks = current_stack().bookmarks
 	cursor_index = cursor_index + direction
 	if cursor_index < 1 then
 		cursor_index = math.max(#bookmarks, 1)
@@ -160,11 +160,11 @@ function M.move_bookmark(direction)
 		return
 	end
 	local curr_stack = current_stack()
-	if util.tbllen(current_stack().bookmarks) < 2 then
+	if #current_stack().bookmarks < 2 then
 		return
 	end
 	local new_idx = cursor_index + direction
-	if new_idx < 1 or new_idx > util.tbllen(curr_stack.bookmarks) then
+	if new_idx < 1 or new_idx > #curr_stack.bookmarks then
 		return
 	end
 	local curr_mark = current_bookmark()
@@ -192,7 +192,7 @@ end
 
 ---@param idx integer
 function M.goto_bookmark_at_index(idx)
-	if idx < 1 or idx > util.tbllen(bookmark_stacks[current_stack_index].bookmarks) then
+	if idx < 1 or idx > #current_stack().bookmarks then
 		vim.notify('[spelunk.nvim] Given invalid index: ' .. idx)
 		return
 	end
@@ -231,7 +231,7 @@ function M.select_and_goto_bookmark(direction)
 	if ui.is_open() then
 		return
 	end
-	if util.tbllen(current_stack().bookmarks) == 0 then
+	if #current_stack().bookmarks == 0 then
 		vim.notify('[spelunk.nvim] No bookmarks to go to')
 		return
 	end
@@ -240,14 +240,14 @@ function M.select_and_goto_bookmark(direction)
 end
 
 function M.delete_current_stack()
-	if util.tbllen(bookmark_stacks) < 2 then
+	if #bookmark_stacks < 2 then
 		vim.notify('[spelunk.nvim] Cannot delete a stack when you have less than two')
 		return
 	end
-	if not bookmark_stacks[current_stack_index] then
+	if not current_stack() then
 		return
 	end
-	marks.delete_stack(bookmark_stacks[current_stack_index])
+	marks.delete_stack(current_stack())
 	table.remove(bookmark_stacks, current_stack_index)
 	current_stack_index = 1
 	update_window(false)
@@ -255,7 +255,7 @@ function M.delete_current_stack()
 end
 
 function M.edit_current_stack()
-	local stack = bookmark_stacks[current_stack_index]
+	local stack = current_stack()
 	if not stack then
 		return
 	end
@@ -263,7 +263,7 @@ function M.edit_current_stack()
 	if name == '' then
 		return
 	end
-	bookmark_stacks[current_stack_index].name = name
+	current_stack().name = name
 	update_window(false)
 	M.persist()
 end
@@ -308,6 +308,7 @@ function M.all_full_marks()
 				file = mark.file,
 				line = mark.line,
 				col = mark.col,
+				meta = mark.meta,
 			})
 		end
 	end
@@ -341,6 +342,7 @@ function M.current_full_marks()
 			file = mark.file,
 			line = mark.line,
 			col = mark.col,
+			meta = mark.meta,
 		})
 	end
 	return data
@@ -424,6 +426,18 @@ M.qf_current_marks = function()
 		table.insert(vmarks, vmark)
 	end
 	open_marks_qf(vmarks)
+end
+
+---@param field string
+---@param val any
+M.add_mark_meta = function(field, val)
+	current_bookmark().meta[field] = val
+end
+
+---@param mark VirtualBookmark | PhysicalBookmark
+---@return any | nil
+M.get_mark_meta = function(mark, field)
+	return mark.meta[field]
 end
 
 function M.setup(c)
