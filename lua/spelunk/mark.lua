@@ -1,5 +1,3 @@
-local util = require('spelunk.util')
-
 local M = {}
 
 ---@type integer
