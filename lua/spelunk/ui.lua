@@ -150,35 +150,46 @@ function M.show_help()
 		minheight = dims.base.height,
 	})
 
+	---@param arg string | string[]
+	local fmt = function(arg)
+		if type(arg) == 'string' then
+			return arg
+		elseif type(arg) == 'table' then
+			return table.concat(arg, ', ')
+		else
+			error('[spelunk.nvim] ui.show_help.fmt passed unsupported type: ' .. type(arg))
+		end
+	end
+
 	local content = {
 		'Normal Mappings',
 		'---------------',
-		'Toggle UI               ' .. base_config.toggle,
-		'Add bookmark            ' .. base_config.add,
-		'Next bookmark           ' .. base_config.next_bookmark,
-		'Prev bookmark           ' .. base_config.prev_bookmark,
-		'Search bookmarks        ' .. base_config.search_bookmarks,
-		'Search curr stack marks ' .. base_config.search_current_bookmarks,
-		'Search stacks           ' .. base_config.search_stacks,
+		'Toggle UI               ' .. fmt(base_config.toggle),
+		'Add bookmark            ' .. fmt(base_config.add),
+		'Next bookmark           ' .. fmt(base_config.next_bookmark),
+		'Prev bookmark           ' .. fmt(base_config.prev_bookmark),
+		'Search bookmarks        ' .. fmt(base_config.search_bookmarks),
+		'Search curr stack marks ' .. fmt(base_config.search_current_bookmarks),
+		'Search stacks           ' .. fmt(base_config.search_stacks),
 		'',
 		'Window Mappings',
 		'---------------',
-		'Cursor down             ' .. window_config.cursor_down,
-		'Cursor up               ' .. window_config.cursor_up,
-		'Bookmark down           ' .. window_config.bookmark_down,
-		'Bookmark up             ' .. window_config.bookmark_up,
-		'Go to bookmark          ' .. window_config.goto_bookmark,
-		'Go to bookmark, split   ' .. window_config.goto_bookmark_hsplit,
-		'Go to bookmark, vsplit  ' .. window_config.goto_bookmark_vsplit,
+		'Cursor down             ' .. fmt(window_config.cursor_down),
+		'Cursor up               ' .. fmt(window_config.cursor_up),
+		'Bookmark down           ' .. fmt(window_config.bookmark_down),
+		'Bookmark up             ' .. fmt(window_config.bookmark_up),
+		'Go to bookmark          ' .. fmt(window_config.goto_bookmark),
+		'Go to bookmark, split   ' .. fmt(window_config.goto_bookmark_hsplit),
+		'Go to bookmark, vsplit  ' .. fmt(window_config.goto_bookmark_vsplit),
 		'Go to bookmark at index ' .. '# of index',
-		'Delete bookmark         ' .. window_config.delete_bookmark,
-		'Next stack              ' .. window_config.next_stack,
-		'Previous stack          ' .. window_config.previous_stack,
-		'New stack               ' .. window_config.new_stack,
-		'Delete stack            ' .. window_config.delete_stack,
-		'Edit stack              ' .. window_config.edit_stack,
-		'Close                   ' .. window_config.close,
-		'Help                    ' .. window_config.help,
+		'Delete bookmark         ' .. fmt(window_config.delete_bookmark),
+		'Next stack              ' .. fmt(window_config.next_stack),
+		'Previous stack          ' .. fmt(window_config.previous_stack),
+		'New stack               ' .. fmt(window_config.new_stack),
+		'Delete stack            ' .. fmt(window_config.delete_stack),
+		'Edit stack              ' .. fmt(window_config.edit_stack),
+		'Close                   ' .. fmt(window_config.close),
+		'Help                    ' .. fmt(window_config.help),
 	}
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
