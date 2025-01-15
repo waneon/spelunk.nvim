@@ -323,6 +323,7 @@ function M.search_marks()
 		return
 	end
 	if ui.is_open() then
+		vim.notify('[spelunk.nvim] Cannot search with UI open')
 		return
 	end
 	local data = {}
@@ -359,6 +360,7 @@ function M.search_current_marks()
 		return
 	end
 	if ui.is_open() then
+		vim.notify('[spelunk.nvim] Cannot search with UI open')
 		return
 	end
 	local data = {}
@@ -377,6 +379,7 @@ function M.search_stacks()
 		return
 	end
 	if ui.is_open() then
+		vim.notify('[spelunk.nvim] Cannot search with UI open')
 		return
 	end
 	---@param stack PhysicalStack
