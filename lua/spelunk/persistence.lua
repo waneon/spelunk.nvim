@@ -126,8 +126,9 @@ end
 -- NOTE: load current cursor
 function M.load_cursor_info()
 	local file, err = io.open(cursor_info_path, 'rb')
-	if err then return end
-	if not file then return end
+	if file == nil or err then
+		return 1
+	end
 	local cursor = tonumber(file:read("*n"))
 	file:close()
 
