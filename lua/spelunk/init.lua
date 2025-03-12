@@ -245,6 +245,17 @@ function M.cut_following_bookmarks()
 	M.persist()
 end
 
+-- NOTE: add clearing function
+function M.delete_all_current_bookmarks()
+	local bookmarks = current_stack().bookmarks
+	for idx=#bookmarks,1,-1 do
+		marks.delete_mark(bookmarks[idx])
+		table.remove(bookmarks, idx)
+	end
+	update_window(true)
+	M.persist()
+end
+
 ---@param direction 1 | -1
 function M.select_and_goto_bookmark(direction)
 	if ui.is_open() then
