@@ -147,10 +147,11 @@ end
 function M.move_cursor(direction)
 	local bookmarks = current_stack().bookmarks
 	cursor_index = cursor_index + direction
+	-- NOTE: make non-cyclic
 	if cursor_index < 1 then
-		cursor_index = math.max(#bookmarks, 1)
-	elseif cursor_index > #bookmarks then
 		cursor_index = 1
+	elseif cursor_index > #bookmarks then
+		cursor_index = #bookmarks
 	end
 	update_window(true)
 end
