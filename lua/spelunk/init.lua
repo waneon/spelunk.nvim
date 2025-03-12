@@ -137,8 +137,9 @@ function M.add_bookmark()
 	end
 	local currstack = current_stack()
 	table.insert(currstack.bookmarks, marks.set_mark_current_pos(#currstack.bookmarks + 1))
-	vim.notify(string.format("[spelunk.nvim] Bookmark added to stack '%s': %s:%d:%d",
-		currstack.name, vim.fn.expand('%:p'), vim.fn.line('.'), vim.fn.col('.')))
+	-- NOTE: disable notification
+	-- vim.notify(string.format("[spelunk.nvim] Bookmark added to stack '%s': %s:%d:%d",
+	-- 	currstack.name, vim.fn.expand('%:p'), vim.fn.line('.'), vim.fn.col('.')))
 	update_window(true)
 	M.persist()
 end
