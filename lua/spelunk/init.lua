@@ -140,6 +140,7 @@ function M.add_bookmark()
 	-- NOTE: disable notification
 	-- vim.notify(string.format("[spelunk.nvim] Bookmark added to stack '%s': %s:%d:%d",
 	-- 	currstack.name, vim.fn.expand('%:p'), vim.fn.line('.'), vim.fn.col('.')))
+	cursor_index = #currstack.bookmarks
 	update_window(true)
 	M.persist()
 end
@@ -237,8 +238,7 @@ function M.cut_following_bookmarks()
 	if not bookmarks[cursor_index] then
 		return
 	end
-	local start = math.min(#bookmarks, cursor_index + 1)
-	for idx=#bookmarks,start,-1 do
+	for idx=#bookmarks, cursor_index + 1, -1 do
 		marks.delete_mark(bookmarks[idx])
 		table.remove(bookmarks, idx)
 	end
