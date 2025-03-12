@@ -230,6 +230,21 @@ function M.delete_selected_bookmark()
 	M.persist()
 end
 
+-- NOTE: add cutting function
+function M.cut_following_bookmarks()
+	local bookmarks = current_stack().bookmarks
+	if not bookmarks[cursor_index] then
+		return
+	end
+	local start = math.min(#bookmarks, cursor_index + 1)
+	for idx=#bookmarks,start,-1 do
+		marks.delete_mark(bookmarks[idx])
+		table.remove(bookmarks, idx)
+	end
+	update_window(true)
+	M.persist()
+end
+
 ---@param direction 1 | -1
 function M.select_and_goto_bookmark(direction)
 	if ui.is_open() then
