@@ -155,6 +155,7 @@ function M.move_cursor(direction)
 		cursor_index = #bookmarks
 	end
 	update_window(true)
+	M.persist()
 end
 
 ---@param direction 1 | -1
@@ -324,6 +325,7 @@ end
 function M.persist()
 	if enable_persist then
 		persist.save(marks.virt_to_physical_stack(bookmark_stacks))
+		persist.save_cursor_info(cursor_index)
 	end
 end
 
@@ -515,6 +517,7 @@ function M.setup(c)
 		enable_persist = conf.enable_persist or cfg.get_default('enable_persist')
 		if enable_persist then
 			physical_stacks = persist.load()
+			cursor_index = persist.load_cursor_info()
 		end
 		if not physical_stacks then
 			physical_stacks = default_stacks

@@ -7,6 +7,7 @@ end
 local state_dir = vim.fs.joinpath(statepath, 'spelunk')
 local cwd_str = (vim.fn.getcwd() .. '.lua'):gsub('[/\\:*?\"<>|]', '_')
 local path = vim.fs.joinpath(state_dir, cwd_str)
+local cursor_info_path = vim.fs.joinpath(state_dir, cwd_str .. ".cursor_info")
 
 ---@return string
 local function exportstring(s)
@@ -111,6 +112,26 @@ function M.save(tbl)
 		vim.fn.mkdir(state_dir, 'p')
 	end
 	savetbl(tbl, path)
+end
+
+-- NOTE: save current cursor
+function M.save_cursor_info(current_cursor)
+	local file, err = io.open(cursor_info_path, 'wb')
+	if err then return end
+	if not file then return end
+	file:write(current_cursor)
+	file:close()
+end
+
+-- NOTE: load current cursor
+function M.load_cursor_info()
+	local file, err = io.open(cursor_info_path, 'rb')
+	if err then return end
+	if not file then return end
+	local cursor = tonumber(file:read("*n"))
+	file:close()
+
+	return cursor
 end
 
 ---@return PhysicalStack[] | nil
