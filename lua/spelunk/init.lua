@@ -185,8 +185,8 @@ end
 ---@param split string | nil
 local function goto_bookmark(close, split)
 	local bookmarks = current_stack().bookmarks
-	local mark = marks.virt_to_physical(current_bookmark())
 	if cursor_index > 0 and cursor_index <= #bookmarks then
+		local mark = marks.virt_to_physical(current_bookmark())
 		if close then
 			M.close_windows()
 		end
